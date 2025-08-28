@@ -4,7 +4,9 @@ namespace API
 {
     #region User
 
-    public record UserRequest(string Name, string Password);
+    public record CreateUserRequest(string Name, string Email, string Password);
+    public record UpdateUserRequest(string Name, string Password);
+    public record LoginRequest(string Email, string Password);
     public record BasicUserResponse(int Id, string Name);
     public record DetailedUserResponse(int Id, string Name, IEnumerable<BasicPetResponse> Pets) 
                 : BasicUserResponse(Id, Name);
