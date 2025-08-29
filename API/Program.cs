@@ -1,7 +1,12 @@
+using API.Handlers;
 using API.Infra;
 using API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// TODO
+// Rule: Consistent subdomain names should be used for your APIs
+
 
 // Add services to the container.
 builder.Services.AddSingleton<IData, Data>();
@@ -32,9 +37,5 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-
-// Rule: Consistent subdomain names should be used for your APIs
-app.UsePathBase(new PathString($"/{app.Configuration["SubDomain"]}"));
-app.UseRouting();
 
 app.Run();
