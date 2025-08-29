@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
@@ -7,37 +6,38 @@ namespace API.Controllers
     public class UserController : ControllerBase
     {
         [HttpPost]
-        public IActionResult Create([FromBody] CreateUserRequest request)
+        public async Task<IActionResult> Create([FromBody] CreateUserRequest request)
         {
             return Ok();
         }
 
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
             return Ok();
         }
 
         [HttpGet("{id}")]
-        public IActionResult Get([FromRoute] int id)
+        public async Task<IActionResult> Get([FromRoute] int id)
         {
             return Ok();
         }
 
-        [HttpPut]
-        public IActionResult Get([FromRoute] int id, [FromBody] UpdateUserRequest request)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateUserRequest request)
         {
             return Ok();
         }
+
 
         [HttpDelete("{id}")]
-        public IActionResult Delete([FromRoute] int id)
+        public async Task<IActionResult> Delete([FromRoute] int id)
         {
             return Ok();
         }
 
         [HttpPost("login")]
-        public IActionResult Login([FromBody] CreateUserRequest request)
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             return Ok();
         }
