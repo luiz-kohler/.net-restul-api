@@ -1,12 +1,11 @@
-using API.Handlers;
 using API.Infra;
 using API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// TODO
 // Rule: Consistent subdomain names should be used for your APIs
-
+// Rule: Consistent subdomain names should be used for your client developer portal
+// Configure this on DNS
 
 // Add services to the container.
 builder.Services.AddSingleton<IData, Data>();
