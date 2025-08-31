@@ -5,6 +5,7 @@
         public int Id { get; set; }
         public DateTimeOffset? LastModifiedAt { get; set; }
         public required string ETag { get; set; }
+        public required DateTimeOffset CreatedAt { get; set; }
     }
 
     public class User : BaseEntity
