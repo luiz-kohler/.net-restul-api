@@ -1,3 +1,4 @@
+using API.Handlers;
 using API.Infra;
 using API.Services;
 
@@ -8,6 +9,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Configure this on DNS
 
 // Add services to the container.
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
+builder.Services.Configure<HashHandlerOptions>(builder.Configuration);
+builder.Services.AddSingleton<IHashHandler, HashHandler>();
+
 builder.Services.AddSingleton<IData, Data>();
 builder.Services.AddSingleton<ICollectionAccessor, CollectionAccessor>();
 
@@ -36,5 +43,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseExceptionHandler();
 
 app.Run();
