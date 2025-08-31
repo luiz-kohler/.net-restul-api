@@ -5,8 +5,10 @@
         Task CreateAsync(TEntity entity);
         Task<TEntity?> GetByIdAsync(int id);
         Task<IList<TEntity>> GetAllAsync();
+        Task<IList<TEntity>> GetAllAsync(Func<TEntity, bool> predicate);
         Task UpdateAsync(TEntity entity);
         Task DeleteAsync(int id);
+        Task<bool> ExistsAsync(Func<TEntity, bool> predicate);
     }
 
     public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : BaseEntity
@@ -36,10 +38,21 @@
             return Task.CompletedTask;
         }
 
+        public Task<bool> ExistsAsync(Func<TEntity, bool> predicate)
+        {
+            return Task.FromResult(Collection.Any(predicate));
+        }
+
         public Task<IList<TEntity>> GetAllAsync()
         {
             var entities = Collection;
             return Task.FromResult(Collection);
+        }
+
+        public Task<IList<TEntity>> GetAllAsync(Func<TEntity, bool> predicate)
+        {
+           var entities = Collection.Where(predicate);
+            return Task.FromResult<IList<TEntity>>(entities.ToList());
         }
 
         public Task<TEntity?> GetByIdAsync(int id)
