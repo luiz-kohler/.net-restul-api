@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using API.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
@@ -6,13 +7,18 @@ namespace API.Controllers
     [Route("users")]
     public class UserController : ControllerBase
     {
+        private readonly IUserService _userService;
+
+        public UserController(IUserService userService)
+        {
+            _userService = userService;
+        }
+
+
         // Rule: CRUD function names should not be used in URIs
         // Rule: POST must be used to create a new resource in a collection
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateUserRequest request)
-        {
-            return Ok();
-        }
+        public async Task<IActionResult> Create([FromBody] CreateUserRequest request) => await _userService.Create(request);
 
         // Rule: The query component of a URI should be used to paginate collection or store results
         [HttpGet]
