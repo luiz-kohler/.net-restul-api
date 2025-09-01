@@ -1,13 +1,17 @@
-﻿namespace API.Infra
+﻿using XAct;
+
+namespace API.Infra
 {
     public interface IBaseRepository<TEntity> where TEntity : BaseEntity
     {
         Task CreateAsync(TEntity entity);
         Task<TEntity?> GetByIdAsync(int id);
+        Task<TEntity?> GetOneAsync(Func<TEntity, bool> predicate);
         Task<IList<TEntity>> GetAllAsync();
         Task<IList<TEntity>> GetAllAsync(Func<TEntity, bool> predicate);
         Task UpdateAsync(TEntity entity);
         Task DeleteAsync(int id);
+        Task DeleteBulkAsync(IEnumerable<TEntity> entities);
         Task<bool> ExistsAsync(Func<TEntity, bool> predicate);
     }
 
@@ -23,6 +27,12 @@
 
         public Task CreateAsync(TEntity entity)
         {
+            if(entity.Id == 0)
+            {
+                var lastId = Collection.Any() ? Collection.Max(x => x.Id) : 0;
+                entity.Id = lastId + 1;
+            }
+
             Collection.Add(entity);
 
             return Task.CompletedTask;
@@ -30,11 +40,17 @@
 
         public Task DeleteAsync(int id)
         {
-            var entity = Collection.First(entity => entity.Id == id);
+            var entity = Collection.FirstOrDefault(entity => entity.Id == id);
 
             if(entity != null) 
                 Collection.Remove(entity);
 
+            return Task.CompletedTask;
+        }
+
+        public Task DeleteBulkAsync(IEnumerable<TEntity> entities)
+        {
+            entities.ForEach(entity => Collection.Remove(entity));
             return Task.CompletedTask;
         }
 
@@ -59,6 +75,13 @@
         {
             var entity = Collection.FirstOrDefault(entity => entity.Id == id);
             return Task.FromResult(entity);
+        }
+
+        public Task<TEntity?> GetOneAsync(Func<TEntity, bool> predicate)
+        {
+           var entity = Collection.Where(predicate).FirstOrDefault();
+            return Task.FromResult(entity);
+
         }
 
         public Task UpdateAsync(TEntity entity)

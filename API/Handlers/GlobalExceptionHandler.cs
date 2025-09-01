@@ -42,28 +42,24 @@ namespace API.Handlers
             public static ProblemDetails BadRequest(string message) => new()
             {
                 Status = StatusCodes.Status400BadRequest,
-                Title = "Bad Request",
-                Detail = message
+                Title = message
             };
 
             public static ProblemDetails NotFound(string message) => new()
             {
                 Status = StatusCodes.Status404NotFound,
-                Title = "Internal Server Error",
-                Detail = message
+                Title = message
             };
 
             public static ProblemDetails Conflict(string message) => new()
             {
                 Status = StatusCodes.Status409Conflict,
-                Title = "Conflict",
-                Detail = message
+                Title = message
             };
 
             public static ProblemDetails InternalServerError() => new()
             {
-                Status = StatusCodes.Status500InternalServerError,
-                Title = "Internal Server Error"
+                Status = StatusCodes.Status500InternalServerError
             };
         }
     }

@@ -1,5 +1,6 @@
 ﻿using API.Services;
 using Microsoft.AspNetCore.Mvc;
+using XAct.Messages;
 
 namespace API.Controllers
 {
@@ -22,77 +23,44 @@ namespace API.Controllers
 
         // Rule: The query component of a URI should be used to paginate collection or store results
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] int page, [FromQuery] int pageSize, [FromQuery] int cursor)
-        {
-            return Ok();
-        }
+        public async Task<IActionResult> GetAll([FromQuery] int page, [FromQuery] int pageSize, [FromQuery] int cursor) => await _userService.GetAll();
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get([FromRoute] int id)
-        {
-            return Ok();
-        }
+        public async Task<IActionResult> Get([FromRoute] int id) => await _userService.GetById(id);
 
         // Rule: PUT must be used to update mutable resources
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateUserRequest request)
-        {
-            return Ok();
-        }
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateUserRequest request) => await _userService.Update(id, request);
 
         // Rule: PUT must be used to both insert and update a stored resource
         [HttpPut("upsert/{id}")]
-        public async Task<IActionResult> Upsert([FromRoute] int id, [FromBody] UpdateUserRequest request)
-        {
-            return Ok();
-        }
+        public async Task<IActionResult> Upsert([FromRoute] int id, [FromBody] CreateUserRequest request) => await _userService.Upsert(id, request);
 
         // Rule: DELETE must be used to remove a resource from its parent
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete([FromRoute] int id)
-        {
-            return Ok();
-        }
+        public async Task<IActionResult> Delete([FromRoute] int id) => await _userService.Delete(id);
 
+        // Rule: A verb or verb phrase should be used for controller names
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
-        {
-            return Ok();
-        }
+        public async Task<IActionResult> Login([FromBody] LoginRequest request) => await _userService.Login(request);
 
         // Rule: Hyphens (-) should be used to improve the readability of URIs
         // Rule: Underscores (_) should not be used in URIs
         [HttpGet("{id}/first-pet")]
-        public async Task<IActionResult> DeletePetsFromUser([FromRoute] int id)
-        {
-            return Ok();
-        }
+        public async Task<IActionResult> GetFirstPetFromUser([FromRoute] int id) => await _userService.GetFirstPetFromUser(id);
+
+        //Rule: HEAD should be used to retrieve response headers
+        [HttpHead("{id}")]
+        public async Task<IActionResult> CheckUserExistence([FromRoute] int id) => await _userService.CheckUserExistence(id);
+
+        // Rule: OPTIONS should be used to retrieve metadata that describes a resource’s available interactions
+        [HttpOptions]
+        public async Task<IActionResult> Options() => _userService.Options();
 
         // Rule: File extensions should not be included in URIs
         // Rule: A singular noun should be used for document names
         [HttpPost("report")]
         public async Task<IActionResult> Report()
-        {
-            return Ok();
-        }
-
-        // Rule: A verb or verb phrase should be used for controller names
-        [HttpPost("order-by-name")]
-        public async Task<IActionResult> OrderByName()
-        {
-            return Ok();
-        }
-
-        //Rule: HEAD should be used to retrieve response headers
-        [HttpHead("{id}")]
-        public async Task<IActionResult> CheckUserExistence([FromRoute] int id)
-        {
-            return Ok();
-        }
-
-        // Rule: OPTIONS should be used to retrieve metadata that describes a resource’s available interactions
-        [HttpOptions]
-        public async Task<IActionResult> Options()
         {
             return Ok();
         }

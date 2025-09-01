@@ -12,6 +12,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.Configure<HashHandlerOptions>(builder.Configuration);
 builder.Services.AddSingleton<IHashHandler, HashHandler>();
 
