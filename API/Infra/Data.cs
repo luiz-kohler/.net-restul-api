@@ -3,13 +3,11 @@
     public interface IData
     {
         public IList<User> Users { get; set; }
-        public IList<Pet> Pets { get; set; }
     }
 
     public class Data : IData
     {
         public IList<User> Users { get; set; } = new List<User>();
-        public IList<Pet> Pets { get; set; } = new List<Pet>();
     }
 
     public interface ICollectionAccessor
@@ -31,7 +29,6 @@
             return typeof(TEntity).Name switch
             {
                 nameof(User) => (IList<TEntity>)_data.Users,
-                nameof(Pet) => (IList<TEntity>)_data.Pets,
                 _ => throw new InvalidOperationException($"No collection defined for entity type {typeof(TEntity).Name}")
             };
         }

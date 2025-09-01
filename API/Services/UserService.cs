@@ -1,11 +1,10 @@
 ﻿using API.Exceptions;
 using API.Handlers;
 using API.Infra;
-using Microsoft.AspNetCore.Http.HttpResults;
+using ClosedXML.Excel;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
+using System.Drawing;
 using XAct;
-using XAct.Users;
 
 namespace API.Services
 {
@@ -14,30 +13,28 @@ namespace API.Services
         Task<IActionResult> Create(CreateUserRequest request);
         Task<IActionResult> GetAll();
         Task<IActionResult> GetById(int id);
+        Task<IActionResult> GetFirstUser();
         Task<IActionResult> Update(int id, UpdateUserRequest request);
         Task<IActionResult> Delete(int id);
         Task<IActionResult> Login(LoginRequest request);
         Task<IActionResult> Upsert(int id, CreateUserRequest request);
-        Task<IActionResult> GetFirstPetFromUser(int id);
         Task<IActionResult> CheckUserExistence(int id);
         IActionResult Options();
+        Task<IActionResult> GenerateReport();
     }
 
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        private readonly IPetRepository _petRepository;
         private readonly IHashHandler _hashHandler;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public UserService(
             IUserRepository userRepository,
-            IPetRepository petRepository,
             IHashHandler hashHandler,
             IHttpContextAccessor httpContextAccessor)
         {
             _userRepository = userRepository;
-            _petRepository = petRepository;
             _hashHandler = hashHandler;
             _httpContextAccessor = httpContextAccessor;
         }
@@ -58,7 +55,7 @@ namespace API.Services
             if (isEmailAlreadyRegistered)
                 throw new ConflictException("This email is already registered.");
 
-            var user = new User 
+            var user = new User
             {
                 Email = request.Email,
                 Name = request.Name,
@@ -69,7 +66,7 @@ namespace API.Services
 
             await _userRepository.CreateAsync(user);
 
-            return new CreatedResult("users", new {Id = user.Id});
+            return new CreatedResult("users", new { Id = user.Id });
         }
 
         public async Task<IActionResult> Delete(int id)
@@ -79,22 +76,60 @@ namespace API.Services
             if (user is null)
                 throw new NotFoundException("User not found.");
 
-            var pets = await _petRepository.GetAllAsync(pet => pet.UserId == user.Id);
-
-            if(pets.Any())
-                await _petRepository.DeleteBulkAsync(pets);
-
             await _userRepository.DeleteAsync(id);
 
             return new NoContentResult();
 
         }
 
+        public async Task<IActionResult> GenerateReport()
+        {
+            var users = await _userRepository.GetAllAsync();
+
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("Users");
+
+                worksheet.Cell(1, 1).Value = "ID";
+                worksheet.Cell(1, 2).Value = "Name";
+                worksheet.Cell(1, 3).Value = "Email";
+                worksheet.Cell(1, 4).Value = "Created At";
+
+                var headerRange = worksheet.Range(1, 1, 1, 4);
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+                int row = 2;
+                foreach (var user in users)
+                {
+                    worksheet.Cell(row, 1).Value = user.Id;
+                    worksheet.Cell(row, 2).Value = user.Name;
+                    worksheet.Cell(row, 3).Value = user.Email;
+                    worksheet.Cell(row, 4).Value = user.CreatedAt.ToString("d");
+                    row++;
+                }
+
+                worksheet.Columns().AdjustToContents();
+
+                using (var memoryStream = new MemoryStream())
+                {
+                    workbook.SaveAs(memoryStream);
+                    memoryStream.Position = 0;
+
+                    return new FileContentResult(memoryStream.ToArray(),
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    {
+                        FileDownloadName = $"Users_Report_{DateTime.UtcNow:yyyyMMdd_HHmmss}.xlsx"
+                    };
+                }
+            }
+        }
+
         public async Task<IActionResult> GetAll()
         {
             var users = await _userRepository.GetAllAsync();
 
-            var response = users.Map(user => new BasicUserResponse { Id = user.Id, Name = user.Name, Email = user.Email });
+            var response = users.Map(user => new BasicUserResponse { Id = user.Id, Name = user.Name });
 
             return new OkObjectResult(response);
         }
@@ -103,49 +138,33 @@ namespace API.Services
         {
             var user = await _userRepository.GetByIdAsync(id);
 
-            if(user is null)
+            if (user is null)
                 throw new NotFoundException("User not found.");
 
-            var pets = await _petRepository.GetAllAsync(pet => pet.UserId == user.Id);
-
-            var response = new DetailedUserResponse 
-            { 
-                Id = user.Id, 
-                Name = user.Name, 
-                Email = user.Email, 
-                Pets = pets.Map(pet => new BasicPetResponse() 
-                { 
-                    Id = pet.Id,
-                    UserId = user.Id,
-                    Age = pet.Age,
-                    Name = pet.Name,
-                    IsVaccinated = pet.IsVaccinated,
-                })  
+            var response = new DetailedUserResponse
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
             };
 
             return new OkObjectResult(response);
         }
 
-        public async Task<IActionResult> GetFirstPetFromUser(int id)
+        public async Task<IActionResult> GetFirstUser()
         {
-            var user = await _userRepository.GetByIdAsync(id);
+            var users = await _userRepository.GetAllAsync();
 
-            if (user is null)
+            if (users == null || !users.Any())
                 throw new NotFoundException("User not found.");
 
-            var pets = await _petRepository.GetAllAsync(pet => pet.UserId == user.Id);
-            var firstPet = pets.OrderByDescending(pet => pet.CreatedAt).FirstOrDefault();
+            var firstUser = users.OrderBy(user => user.CreatedAt).First();
 
-            if(firstPet == null)
-                throw new NotFoundException("Pet not found.");
-
-            var response = new BasicPetResponse
+            var response = new DetailedUserResponse
             {
-                Id = firstPet.Id,
-                UserId = user.Id,
-                Name = firstPet.Name,
-                Age = firstPet.Age,
-                IsVaccinated = firstPet.IsVaccinated
+                Id = firstUser.Id,
+                Email = firstUser.Email,
+                Name = firstUser.Name
             };
 
             return new OkObjectResult(response);
@@ -155,10 +174,10 @@ namespace API.Services
         {
             var hashedPassword = _hashHandler.Hash(request.Password);
 
-            var user = await _userRepository.GetOneAsync(user => user.Email == request.Email 
+            var user = await _userRepository.GetOneAsync(user => user.Email == request.Email
                                                               && user.HashedPassword == hashedPassword);
 
-            if(user == null)
+            if (user == null)
                 throw new NotFoundException("User not found.");
 
             return new OkObjectResult(new { Message = "Authenticate with success." });

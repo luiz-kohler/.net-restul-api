@@ -46,8 +46,8 @@ namespace API.Controllers
 
         // Rule: Hyphens (-) should be used to improve the readability of URIs
         // Rule: Underscores (_) should not be used in URIs
-        [HttpGet("{id}/first-pet")]
-        public async Task<IActionResult> GetFirstPetFromUser([FromRoute] int id) => await _userService.GetFirstPetFromUser(id);
+        [HttpGet("first-user")]
+        public async Task<IActionResult> GetFirstPetFromUser() => await _userService.GetFirstUser();
 
         //Rule: HEAD should be used to retrieve response headers
         [HttpHead("{id}")]
@@ -55,14 +55,11 @@ namespace API.Controllers
 
         // Rule: OPTIONS should be used to retrieve metadata that describes a resource’s available interactions
         [HttpOptions]
-        public async Task<IActionResult> Options() => _userService.Options();
+        public IActionResult Options() => _userService.Options();
 
         // Rule: File extensions should not be included in URIs
         // Rule: A singular noun should be used for document names
-        [HttpPost("report")]
-        public async Task<IActionResult> Report()
-        {
-            return Ok();
-        }
+        [HttpGet("report")]
+        public async Task<IActionResult> Report() => await _userService.GenerateReport();
     }
 }

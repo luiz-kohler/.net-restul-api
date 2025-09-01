@@ -14,12 +14,4 @@
         public required string Email { get; set; }
         public required string HashedPassword { get; set; }
     }
-
-    public class Pet : BaseEntity
-    {
-        public int UserId { get; set; }
-        public required string Name { get; set; }
-        public int Age { get; set; }
-        public bool IsVaccinated { get; set; }
-    }
 }
