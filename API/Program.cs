@@ -17,6 +17,10 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.Configure<HashHandlerOptions>(builder.Configuration);
 builder.Services.AddSingleton<IHashHandler, HashHandler>();
 
+builder.Services.Configure<TokenHandlerOptions>(builder.Configuration);
+builder.Services.AddSingleton<ITokenHandler, TokenHandler>();
+builder.Services.ConfigureJWT(builder.Configuration["JWTSecret"]);
+
 builder.Services.AddSingleton<IData, Data>();
 builder.Services.AddSingleton<ICollectionAccessor, CollectionAccessor>();
 

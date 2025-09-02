@@ -16,7 +16,6 @@ namespace API.Handlers
         public HashHandler(IOptions<HashHandlerOptions> options)
         {
             _salt = options?.Value?.HashSalt ?? throw new ArgumentException("Hash salt must be informed.");
-
         }
 
         public string Hash(string input)

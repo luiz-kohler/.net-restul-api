@@ -17,6 +17,10 @@ namespace API
         [Required]
         [MinLength(4)]
         public required string Password { get; set; }
+
+
+        [Required]
+        public required bool IsAdmin { get; set; }
     }
 
     public class UpdateUserRequest
@@ -24,6 +28,9 @@ namespace API
         [Required]
         [MinLength(2)]
         public required string Name { get; set; }
+
+        [Required]
+        public required bool IsAdmin { get; set; }
     }
 
     public class LoginRequest
@@ -41,6 +48,7 @@ namespace API
     {
         public int Id { get; set; }
         public required string Name { get; set; }
+        public bool IsAdmin { get; set; }
     }
 
     public class DetailedUserResponse : BasicUserResponse

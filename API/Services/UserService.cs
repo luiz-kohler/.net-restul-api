@@ -27,16 +27,19 @@ namespace API.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly IHashHandler _hashHandler;
+        private readonly ITokenHandler _tokenHandler;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public UserService(
             IUserRepository userRepository,
             IHashHandler hashHandler,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            ITokenHandler tokenHandler)
         {
             _userRepository = userRepository;
             _hashHandler = hashHandler;
             _httpContextAccessor = httpContextAccessor;
+            _tokenHandler = tokenHandler;
         }
 
         public async Task<IActionResult> CheckUserExistence(int id)
@@ -60,8 +63,9 @@ namespace API.Services
                 Email = request.Email,
                 Name = request.Name,
                 HashedPassword = _hashHandler.Hash(request.Password),
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 ETag = Guid.NewGuid().ToString().Replace("-", ""),
+                IsAdmin = request.IsAdmin
             };
 
             await _userRepository.CreateAsync(user);
@@ -146,6 +150,7 @@ namespace API.Services
                 Id = user.Id,
                 Name = user.Name,
                 Email = user.Email,
+                IsAdmin = user.IsAdmin
             };
 
             return new OkObjectResult(response);
@@ -164,7 +169,8 @@ namespace API.Services
             {
                 Id = firstUser.Id,
                 Email = firstUser.Email,
-                Name = firstUser.Name
+                Name = firstUser.Name,
+                IsAdmin = firstUser.IsAdmin
             };
 
             return new OkObjectResult(response);
@@ -180,7 +186,10 @@ namespace API.Services
             if (user == null)
                 throw new NotFoundException("User not found.");
 
-            return new OkObjectResult(new { Message = "Authenticate with success." });
+            return new OkObjectResult(new { 
+                Message = "Authenticate with success.",
+                Token = _tokenHandler.GenerateAccessToken(user)
+            });
         }
 
         public IActionResult Options()
@@ -197,6 +206,9 @@ namespace API.Services
                 throw new NotFoundException("User not found.");
 
             user.Name = request.Name;
+            user.ETag = Guid.NewGuid().ToString().Replace("-", "");
+            user.LastModifiedAt = DateTime.Now;
+            user.IsAdmin = request.IsAdmin;
 
             await _userRepository.UpdateAsync(user);
 
@@ -210,7 +222,7 @@ namespace API.Services
             if (user == null)
                 return await Create(request);
             else
-                return await Update(id, new() { Name = request.Name });
+                return await Update(id, new() { Name = request.Name, IsAdmin = request.IsAdmin });
         }
     }
 }
