@@ -1,6 +1,7 @@
 using API.Handlers;
 using API.Infra;
 using API.Services;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,11 +22,13 @@ builder.Services.Configure<TokenHandlerOptions>(builder.Configuration);
 builder.Services.AddSingleton<ITokenHandler, TokenHandler>();
 builder.Services.ConfigureJWT(builder.Configuration["JWTSecret"]);
 
-builder.Services.AddSingleton<IData, Data>();
+builder.Services.AddSingleton<IData, API.Infra.Data>();
 builder.Services.AddSingleton<ICollectionAccessor, CollectionAccessor>();
 
 builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<IUserService, UserService>();
+
+builder.Services.AddHttpCacheHeaders();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
